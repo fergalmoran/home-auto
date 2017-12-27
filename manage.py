@@ -2,7 +2,9 @@ from flask import url_for
 from flask_script import Manager
 import urllib.parse
 
-from app import app
+from app import app, initialize_app
+
+initialize_app(app)
 
 manager = Manager(app)
 

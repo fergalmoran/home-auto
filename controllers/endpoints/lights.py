@@ -1,14 +1,19 @@
-import colorsys
+from flask import jsonify
+from flask_restplus import Resource, reqparse
 
-from flask_restful import Resource, reqparse
-from flask import jsonify, json
 from phue import Bridge
 import ast
+import colorsys
+
+from controllers.restplus import api
+
+ns = api.namespace('lights', description='Operations related to Philips Hue lights')
 
 
 class HueController(Resource):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._BRIDGE_IP = "10.1.1.20"
         self._bridge = Bridge(self._BRIDGE_IP)
         self._lights = self._bridge.get_light_objects('name')
@@ -33,6 +38,16 @@ class HueController(Resource):
                 l.bri = v
 
 
+@ns.route('/')
+class ListController(HueController):
+    def get(self):
+        result = []
+        for k, v in self._lights.items():
+            result.append(k)
+
+        return jsonify(result)
+
+
 class RecipeController(Resource):
     def get(self):
         pass
@@ -41,6 +56,7 @@ class RecipeController(Resource):
         pass
 
 
+@ns.route('/recipe/execute')
 class ExecuteRecipeController(HueController):
     def post(self):
         parser = reqparse.RequestParser()
@@ -98,3 +114,4 @@ class ModeController(HueController):
 
         except Exception as e:
             print(e)
+
